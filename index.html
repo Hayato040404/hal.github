@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>URL Shortener</title>
+  <!-- リポジトリ名をベースパスとして設定（必ずスラッシュで始まり、終わるようにします） -->
+  <base href="/hal.github/">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -55,6 +57,20 @@
 <body>
   <div id="app"></div>
   <script>
+    // GitHub Pages のプロジェクトページの場合、リポジトリ名部分を除去する
+    const basePath = '/hal.github/'; // 自分のリポジトリ名に合わせて変更してください
+    let pathname = window.location.pathname;
+
+    // もしpathnameがbasePathで始まるなら、その部分を取り除く
+    if (pathname.indexOf(basePath) === 0) {
+      pathname = pathname.substring(basePath.length);
+    }
+    // 末尾のスラッシュがあれば取り除く
+    if (pathname.endsWith('/')) {
+      pathname = pathname.slice(0, -1);
+    }
+    const code = pathname; // これが短縮コードになります（空文字ならフォーム表示）
+
     // ローカルストレージからマッピングを取得する関数
     function getMapping() {
       const mappingStr = localStorage.getItem('urlMapping');
@@ -83,7 +99,6 @@
           alert('短縮URLをクリップボードにコピーしました！');
         });
       } else {
-        // 古いブラウザ向けのフォールバック
         const tempInput = document.createElement('input');
         tempInput.value = text;
         document.body.appendChild(tempInput);
@@ -94,11 +109,8 @@
       }
     }
     
-    // URLのパス部分を取得（例: "/abcdef" → "abcdef"）
-    const code = window.location.pathname.substring(1);
-    
     if (code) {
-      // もし短縮コードが URL に含まれていれば、ローカルストレージから元のURLを取得してリダイレクト
+      // URLに短縮コードが含まれている場合は、そのコードに対応する元のURLへリダイレクト
       const mapping = getMapping();
       if (mapping[code]) {
         window.location.href = mapping[code];
@@ -107,7 +119,7 @@
           '<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>';
       }
     } else {
-      // ルートにアクセスされた場合、短縮URLを作成するフォームを表示
+      // ルート（短縮コードが空）の場合は、短縮URLを作成するフォームを表示
       document.getElementById('app').innerHTML = `
         <h1>URL Shortener</h1>
         <form id="shortenForm">
@@ -133,7 +145,7 @@
         mapping[shortCode] = longUrl;
         saveMapping(mapping);
         
-        const shortUrl = window.location.origin + '/' + shortCode;
+        const shortUrl = window.location.origin + basePath + shortCode;
         const resultDiv = document.getElementById('result');
         resultDiv.innerHTML = `<p>短縮URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p>
                                <button id="copyBtn">コピー</button>`;
