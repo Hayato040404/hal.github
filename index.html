@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>URL Shortener</title>
-  <!-- GitHub Pages のプロジェクトページの場合、ベースパスを設定 -->
-  
+  <!-- カスタムドメインの場合、サイトのルートは "/" なので base タグは不要 -->
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -57,39 +56,39 @@
 <body>
   <div id="app"></div>
   <script>
-    // GitHub Pages のプロジェクトページの場合、リポジトリ名部分を除去する処理
-     // ご自身のリポジトリ名に合わせて変更してください
+    // カスタムドメインの場合、余計なパスはなくルートは "/" となるため、単純に pathname を扱います
     let pathname = window.location.pathname;
-    if (pathname.indexOf(basePath) === 0) {
-      pathname = pathname.substring(basePath.length);
+    // 先頭の "/" を取り除く
+    if (pathname.startsWith('/')) {
+      pathname = pathname.substring(1);
     }
-    // 末尾のスラッシュがあれば取り除く
+    // 末尾の "/" があれば取り除く
     if (pathname.endsWith('/')) {
       pathname = pathname.slice(0, -1);
     }
-    const code = pathname;  // ここが短縮コードとなる（空ならフォーム表示）
+    const code = pathname; // 空文字の場合はフォーム表示、文字列があれば短縮コードとして扱います
 
-    // ローカルストレージからマッピングを取得する関数
+    // ローカルストレージからマッピング（短縮コード → 元のURL）を取得する関数
     function getMapping() {
       const mappingStr = localStorage.getItem('urlMapping');
       return mappingStr ? JSON.parse(mappingStr) : {};
     }
-    
+
     // マッピングをローカルストレージに保存する関数
     function saveMapping(mapping) {
       localStorage.setItem('urlMapping', JSON.stringify(mapping));
     }
-    
-    // ランダムな短縮コード（6文字）を生成する関数
+
+    // ランダムな短縮コード（デフォルト6文字）を生成する関数
     function generateShortCode(length = 6) {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let code = '';
+      let generated = '';
       for (let i = 0; i < length; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
+        generated += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      return code;
+      return generated;
     }
-    
+
     // クリップボードにテキストをコピーする関数
     function copyToClipboard(text) {
       if (navigator.clipboard) {
@@ -97,6 +96,7 @@
           alert('短縮URLをクリップボードにコピーしました！');
         });
       } else {
+        // 古いブラウザ向けのフォールバック
         const tempInput = document.createElement('input');
         tempInput.value = text;
         document.body.appendChild(tempInput);
@@ -106,19 +106,20 @@
         alert('短縮URLをクリップボードにコピーしました！');
       }
     }
-    
+
+    const app = document.getElementById('app');
+
     if (code) {
-      // 短縮コードが含まれている場合：ローカルストレージから対応する URL を取得しリダイレクト
+      // URLに短縮コードが含まれている場合：ローカルストレージから対応するURLを取得しリダイレクト
       const mapping = getMapping();
       if (mapping[code]) {
         window.location.href = mapping[code];
       } else {
-        document.getElementById('app').innerHTML =
-          '<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>';
+        app.innerHTML = '<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>';
       }
     } else {
-      // ルート（短縮コードが空）の場合：短縮URL作成フォームを表示
-      document.getElementById('app').innerHTML = `
+      // ルート（短縮コードが空）の場合：短縮URL作成用フォームを表示
+      app.innerHTML = `
         <h1>URL Shortener</h1>
         <form id="shortenForm">
           <input type="url" id="longUrl" placeholder="短縮したいURLを入力" required>
@@ -126,27 +127,27 @@
         </form>
         <div id="result" class="result"></div>
       `;
-      
+
       document.getElementById('shortenForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const longUrl = document.getElementById('longUrl').value.trim();
         if (!longUrl) return;
-        
-        let mapping = getMapping();
+
+        const mapping = getMapping();
         let shortCode;
-        // 既存のコードと重複しないようにランダム生成（重複があれば再生成）
+        // 既存のコードと重複しないようにランダムな短縮コードを生成
         do {
           shortCode = generateShortCode();
         } while (mapping[shortCode]);
-        
+
         mapping[shortCode] = longUrl;
         saveMapping(mapping);
-        
-        const shortUrl = window.location.origin + basePath + shortCode;
-        const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = `<p>短縮URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p>
-                               <button id="copyBtn">コピー</button>`;
-        
+
+        const shortUrl = window.location.origin + '/' + shortCode;
+        document.getElementById('result').innerHTML = `
+          <p>短縮URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p>
+          <button id="copyBtn">コピー</button>
+        `;
         document.getElementById('copyBtn').addEventListener('click', function() {
           copyToClipboard(shortUrl);
         });
