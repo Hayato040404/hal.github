@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>URL Shortener</title>
-  <!-- リポジトリ名をベースパスとして設定（必ずスラッシュで始まり、終わるようにします） -->
+  <!-- GitHub Pages のプロジェクトページの場合、ベースパスを設定 -->
   <base href="/hal.github/">
   <style>
     body {
@@ -57,11 +57,9 @@
 <body>
   <div id="app"></div>
   <script>
-    // GitHub Pages のプロジェクトページの場合、リポジトリ名部分を除去する
-    const basePath = '/hal.github/'; // 自分のリポジトリ名に合わせて変更してください
+    // GitHub Pages のプロジェクトページの場合、リポジトリ名部分を除去する処理
+    const basePath = '/hal.github/';  // ご自身のリポジトリ名に合わせて変更してください
     let pathname = window.location.pathname;
-
-    // もしpathnameがbasePathで始まるなら、その部分を取り除く
     if (pathname.indexOf(basePath) === 0) {
       pathname = pathname.substring(basePath.length);
     }
@@ -69,7 +67,7 @@
     if (pathname.endsWith('/')) {
       pathname = pathname.slice(0, -1);
     }
-    const code = pathname; // これが短縮コードになります（空文字ならフォーム表示）
+    const code = pathname;  // ここが短縮コードとなる（空ならフォーム表示）
 
     // ローカルストレージからマッピングを取得する関数
     function getMapping() {
@@ -110,7 +108,7 @@
     }
     
     if (code) {
-      // URLに短縮コードが含まれている場合は、そのコードに対応する元のURLへリダイレクト
+      // 短縮コードが含まれている場合：ローカルストレージから対応する URL を取得しリダイレクト
       const mapping = getMapping();
       if (mapping[code]) {
         window.location.href = mapping[code];
@@ -119,7 +117,7 @@
           '<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>';
       }
     } else {
-      // ルート（短縮コードが空）の場合は、短縮URLを作成するフォームを表示
+      // ルート（短縮コードが空）の場合：短縮URL作成フォームを表示
       document.getElementById('app').innerHTML = `
         <h1>URL Shortener</h1>
         <form id="shortenForm">
@@ -129,7 +127,6 @@
         <div id="result" class="result"></div>
       `;
       
-      // フォーム送信時の処理
       document.getElementById('shortenForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const longUrl = document.getElementById('longUrl').value.trim();
