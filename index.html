@@ -1,167 +1,63 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>URL Shortener - i-x.f5.si</title>
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="無料の短縮URLサービス。長いURLを短縮して簡単に共有できる短縮URLを生成します。">
-  <meta name="keywords" content="URL短縮, 短縮URL, 無料, GAS, GoogleAppsScript, SEO">
-  <link rel="canonical" href="https://i-x.f5.si/">
-  <!-- Open Graph -->
-  <meta property="og:title" content="URL Shortener - i-x.f5.si">
-  <meta property="og:description" content="無料の短縮URLサービス。長いURLを短縮して簡単に共有できる短縮URLを生成します。">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://i-x.f5.si/">
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="URL Shortener - i-x.f5.si">
-  <meta name="twitter:description" content="無料の短縮URLサービス。長いURLを短縮して簡単に共有できる短縮URLを生成します。">
-  <!-- Structured Data (JSON-LD) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "URL Shortener",
-    "url": "https://i-x.f5.si/",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://i-x.f5.si/?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  }
-  </script>
-  <style>
-    /* 共通スタイル */
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    header { background: #007BFF; color: #fff; padding: 10px; }
-    header nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
-    header nav ul li { margin-right: 15px; }
-    header nav ul li a { color: #fff; text-decoration: none; font-weight: bold; }
-    .container { max-width: 800px; margin: 20px auto; padding: 20px; }
-    h1 { text-align: center; }
-    form { display: flex; flex-direction: column; align-items: center; margin-top: 20px; }
-    input[type="url"] {
-      width: 80%; padding: 10px; font-size: 16px; margin-bottom: 10px;
-      border: 1px solid #ccc; border-radius: 4px;
-    }
-    button {
-      padding: 10px 20px; font-size: 16px; border: none; border-radius: 4px;
-      background-color: #007BFF; color: white; cursor: pointer;
-    }
-    button:hover { background-color: #0056b3; }
-    .result { text-align: center; margin-top: 20px; }
-    .result a { font-size: 18px; text-decoration: none; color: #007BFF; }
-    section { margin-top: 40px; }
-    section h2 { color: #007BFF; }
-    section p { line-height: 1.6; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短縮URLサービス</title>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+
+        // 📌 短縮URLを作成
+        function fetchShortenUrl() {
+            const longUrl = document.getElementById("longUrl").value;
+            if (!longUrl) {
+                alert("URLを入力してください！");
+                return;
+            }
+
+            var script = document.createElement("script");
+            var callbackName = "shortenCallback";
+            window[callbackName] = function(response) {
+                if (response.status === "success") {
+                    document.getElementById("result").innerHTML =
+                        `<p>短縮URL: <a href="${response.shortUrl}" target="_blank">${response.shortUrl}</a></p>`;
+                } else {
+                    alert("エラー: " + response.message);
+                }
+                delete window[callbackName];
+            };
+
+            script.src = `${GAS_URL}?action=shorten&url=${encodeURIComponent(longUrl)}&callback=${callbackName}`;
+            document.body.appendChild(script);
+        }
+
+        // 📌 短縮URLを開いたときに自動リダイレクト
+        function handleRedirect() {
+            const path = window.location.pathname.substring(1); // "/abc123" -> "abc123"
+            if (path) {
+                var script = document.createElement("script");
+                var callbackName = "expandCallback";
+                window[callbackName] = function(response) {
+                    if (response.status === "success") {
+                        window.location.href = response.longUrl; // 取得したURLへリダイレクト
+                    } else {
+                        document.body.innerHTML = "<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>";
+                    }
+                    delete window[callbackName];
+                };
+
+                script.src = `${GAS_URL}?action=expand&code=${encodeURIComponent(path)}&callback=${callbackName}`;
+                document.body.appendChild(script);
+            }
+        }
+
+        window.onload = handleRedirect;
+    </script>
 </head>
 <body>
-  <header>
-    <nav>
-      <ul>
-        <li><a href="/">ホーム</a></li>
-        <li><a href="/faq.html">FAQ</a></li>
-        <li><a href="/terms.html">利用規約</a></li>
-        <li><a href="/about.html">動作説明</a></li>
-      </ul>
-    </nav>
-  </header>
-  <div class="container">
-    <div id="app"></div>
-  </div>
-  <script>
-    // ★ GAS Web アプリのURLを設定 ★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyxtiFiJqTox5-DoH-N0E0_b4OgU9VNgtNr6CsJ3ev6ILHhofaSdGI4yKbvx6wqn38p3A/exec";
-
-    // URLのパス部分を取得（例: https://i-x.f5.si/abc123 → "abc123"）
-    let pathname = window.location.pathname;
-    if (pathname.startsWith('/')) { pathname = pathname.substring(1); }
-    if (pathname.endsWith('/')) { pathname = pathname.slice(0, -1); }
-    const code = pathname; // 空ならフォーム表示、文字列なら短縮コードとして扱う
-
-    // ランダムな短縮コード（6文字）を生成する関数
-    function generateShortCode(length = 6) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
-      for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    }
-
-    // クリップボードにコピーする関数
-    function copyToClipboard(text) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-          alert('短縮URLをクリップボードにコピーしました！');
-        });
-      } else {
-        const tempInput = document.createElement('input');
-        tempInput.value = text;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-        alert('短縮URLをクリップボードにコピーしました！');
-      }
-    }
-
-    const app = document.getElementById('app');
-
-    if (code) {
-      // 短縮コードが存在する場合、GASにGETリクエストしてリダイレクト（404の場合も含む）
-      window.location.href = GAS_URL + "?code=" + encodeURIComponent(code);
-    } else {
-      // ルートの場合は短縮URL作成フォームとサービス説明を表示
-      app.innerHTML = `
-        <h1>URL Shortener</h1>
-        <form id="shortenForm">
-          <input type="url" id="longUrl" placeholder="短縮したいURLを入力" required>
-          <button type="submit">短縮する</button>
-        </form>
-        <div id="result" class="result"></div>
-        <section>
-          <h2>このサービスの仕組み</h2>
-          <p>
-            当サービスは、Google Apps Script（GAS）と連携して動作しています。ユーザーが入力したURLに対しランダムな短縮コードを生成し、その対応情報をGoogleスプレッドシートに保存します。
-          </p>
-          <p>
-            短縮URLにアクセスされると、GASが保存された情報から対応する元のURLを検索し、自動的にリダイレクトします。これにより、全ユーザーが共有して利用できる短縮URLサービスを実現しています。
-          </p>
-        </section>
-      `;
-      document.getElementById('shortenForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const longUrl = document.getElementById('longUrl').value.trim();
-        if (!longUrl) return;
-        const shortCode = generateShortCode();
-        try {
-          const response = await fetch(GAS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ shortCode: shortCode, longUrl: longUrl })
-          });
-          const result = await response.json();
-          if (result.status === "success") {
-            const shortUrl = window.location.origin + "/" + shortCode;
-            document.getElementById('result').innerHTML = `
-              <p>短縮URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p>
-              <button id="copyBtn">コピー</button>
-            `;
-            document.getElementById('copyBtn').addEventListener('click', function() {
-              copyToClipboard(shortUrl);
-            });
-          } else {
-            document.getElementById('result').innerHTML = `<p>エラー: ${result.message}</p>`;
-          }
-        } catch (err) {
-          console.error(err);
-          document.getElementById('result').innerHTML = `<p>エラーが発生しました。</p>`;
-        }
-      });
-    }
-  </script>
+    <h1>短縮URLサービス</h1>
+    <input type="text" id="longUrl" placeholder="短縮したいURLを入力">
+    <button onclick="fetchShortenUrl()">短縮する</button>
+    <div id="result"></div>
 </body>
 </html>
