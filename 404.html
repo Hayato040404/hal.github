@@ -3,143 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>URL Shortener</title>
+  <title>404 Not Found - i-x.f5.si</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="お探しのページは見つかりませんでした。URL短縮サービスの404エラーページです。">
+  <link rel="canonical" href="https://i-x.f5.si/404.html">
+  <!-- Open Graph -->
+  <meta property="og:title" content="404 Not Found - i-x.f5.si">
+  <meta property="og:description" content="お探しのページは見つかりませんでした。">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    h1 {
-      text-align: center;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 20px;
-    }
-    input[type="url"] {
-      width: 80%;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 4px;
-      background-color: #007BFF;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .result {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .result a {
-      font-size: 18px;
-      text-decoration: none;
-      color: #007BFF;
-    }
+    /* index.htmlと共通のスタイル */
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    header { background: #007BFF; color: #fff; padding: 10px; }
+    header nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
+    header nav ul li { margin-right: 15px; }
+    header nav ul li a { color: #fff; text-decoration: none; font-weight: bold; }
+    .container { max-width: 800px; margin: 20px auto; padding: 20px; }
+    h1 { text-align: center; }
   </style>
 </head>
 <body>
-  <div id="app"></div>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="/">ホーム</a></li>
+        <li><a href="/faq.html">FAQ</a></li>
+        <li><a href="/terms.html">利用規約</a></li>
+        <li><a href="/about.html">動作説明</a></li>
+      </ul>
+    </nav>
+  </header>
+  <div class="container">
+    <div id="app"></div>
+  </div>
   <script>
+    const GAS_URL = "https://script.google.com/a/macros/zushi-kaisei.ac.jp/u/3/s/AKfycbxIAUK6CXuDFS2lDEP1hBX-0fU5wwXkHzAw3NgA3rtBrMtwshJvkPTwEw5prOzaTelxEw/exec";
     let pathname = window.location.pathname;
-    if (pathname.startsWith('/')) {
-      pathname = pathname.substring(1);
-    }
-    if (pathname.endsWith('/')) {
-      pathname = pathname.slice(0, -1);
-    }
+    if (pathname.startsWith('/')) { pathname = pathname.substring(1); }
+    if (pathname.endsWith('/')) { pathname = pathname.slice(0, -1); }
     const code = pathname;
-
-    function getMapping() {
-      const mappingStr = localStorage.getItem('urlMapping');
-      return mappingStr ? JSON.parse(mappingStr) : {};
-    }
-
-    function saveMapping(mapping) {
-      localStorage.setItem('urlMapping', JSON.stringify(mapping));
-    }
-
-    function generateShortCode(length = 6) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let generated = '';
-      for (let i = 0; i < length; i++) {
-        generated += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return generated;
-    }
-
-    function copyToClipboard(text) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-          alert('短縮URLをクリップボードにコピーしました！');
-        });
-      } else {
-        const tempInput = document.createElement('input');
-        tempInput.value = text;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-        alert('短縮URLをクリップボードにコピーしました！');
-      }
-    }
-
     const app = document.getElementById('app');
-
     if (code) {
-      const mapping = getMapping();
-      if (mapping[code]) {
-        window.location.href = mapping[code];
-      } else {
-        app.innerHTML = '<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>';
-      }
+      // パスに文字列がある場合、GASに問い合わせてリダイレクト
+      window.location.href = GAS_URL + "?code=" + encodeURIComponent(code);
     } else {
-      app.innerHTML = `
-        <h1>URL Shortener</h1>
-        <form id="shortenForm">
-          <input type="url" id="longUrl" placeholder="短縮したいURLを入力" required>
-          <button type="submit">短縮する</button>
-        </form>
-        <div id="result" class="result"></div>
-      `;
-
-      document.getElementById('shortenForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const longUrl = document.getElementById('longUrl').value.trim();
-        if (!longUrl) return;
-
-        const mapping = getMapping();
-        let shortCode;
-        do {
-          shortCode = generateShortCode();
-        } while (mapping[shortCode]);
-
-        mapping[shortCode] = longUrl;
-        saveMapping(mapping);
-
-        const shortUrl = window.location.origin + '/' + shortCode;
-        document.getElementById('result').innerHTML = `
-          <p>短縮URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p>
-          <button id="copyBtn">コピー</button>
-        `;
-        document.getElementById('copyBtn').addEventListener('click', function() {
-          copyToClipboard(shortUrl);
-        });
-      });
+      app.innerHTML = '<h1>404 - Not Found</h1><p>お探しのページは存在しません。</p>';
     }
   </script>
 </body>
