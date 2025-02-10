@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URLリダイレクト中...</title>
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzriFmx_PrBsq2SSt6esx_e7_NPCou5RCEcCAdVkk0dKRMc07yeV7VVlcjcyBUr4tyaNA/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwlwa1MrpRxMy3YDtzjDFjatHgBbvuiu45Ahp9_76fp5JhUSkEDkDnYO1I4Adosb_BbUg/exec";
 
         function handleRedirect() {
             const path = window.location.pathname.substring(1); // "/abc123" -> "abc123"
+
             if (path) {
                 var script = document.createElement("script");
                 var callbackName = "expandCallback";
+
                 window[callbackName] = function(response) {
                     if (response.status === "success") {
-                        window.location.href = response.longUrl; // 取得したURLへリダイレクト
+                        window.location.href = response.longUrl;
                     } else {
                         document.body.innerHTML = "<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>";
                     }
