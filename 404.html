@@ -1,55 +1,37 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>404 Not Found - i-x.f5.si</title>
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="お探しのページは見つかりませんでした。URL短縮サービスの404エラーページです。">
-  <link rel="canonical" href="https://i-x.f5.si/404.html">
-  <!-- Open Graph -->
-  <meta property="og:title" content="404 Not Found - i-x.f5.si">
-  <meta property="og:description" content="お探しのページは見つかりませんでした。">
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary">
-  <style>
-    /* index.htmlと共通のスタイル */
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    header { background: #007BFF; color: #fff; padding: 10px; }
-    header nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
-    header nav ul li { margin-right: 15px; }
-    header nav ul li a { color: #fff; text-decoration: none; font-weight: bold; }
-    .container { max-width: 800px; margin: 20px auto; padding: 20px; }
-    h1 { text-align: center; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URLリダイレクト中...</title>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzriFmx_PrBsq2SSt6esx_e7_NPCou5RCEcCAdVkk0dKRMc07yeV7VVlcjcyBUr4tyaNA/exec";
+
+        function handleRedirect() {
+            const path = window.location.pathname.substring(1); // "/abc123" -> "abc123"
+            if (path) {
+                var script = document.createElement("script");
+                var callbackName = "expandCallback";
+                window[callbackName] = function(response) {
+                    if (response.status === "success") {
+                        window.location.href = response.longUrl; // 取得したURLへリダイレクト
+                    } else {
+                        document.body.innerHTML = "<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>";
+                    }
+                    delete window[callbackName];
+                };
+
+                script.src = `${GAS_URL}?action=expand&code=${encodeURIComponent(path)}&callback=${callbackName}`;
+                document.body.appendChild(script);
+            } else {
+                document.body.innerHTML = "<h1>404 - Not Found</h1><p>ページが見つかりませんでした。</p>";
+            }
+        }
+
+        window.onload = handleRedirect;
+    </script>
 </head>
 <body>
-  <header>
-    <nav>
-      <ul>
-        <li><a href="/">ホーム</a></li>
-        <li><a href="/faq.html">FAQ</a></li>
-        <li><a href="/terms.html">利用規約</a></li>
-        <li><a href="/about.html">動作説明</a></li>
-      </ul>
-    </nav>
-  </header>
-  <div class="container">
-    <div id="app"></div>
-  </div>
-  <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyxtiFiJqTox5-DoH-N0E0_b4OgU9VNgtNr6CsJ3ev6ILHhofaSdGI4yKbvx6wqn38p3A/exec";
-    let pathname = window.location.pathname;
-    if (pathname.startsWith('/')) { pathname = pathname.substring(1); }
-    if (pathname.endsWith('/')) { pathname = pathname.slice(0, -1); }
-    const code = pathname;
-    const app = document.getElementById('app');
-    if (code) {
-      // パスに文字列がある場合、GASに問い合わせてリダイレクト
-      window.location.href = GAS_URL + "?code=" + encodeURIComponent(code);
-    } else {
-      app.innerHTML = '<h1>404 - Not Found</h1><p>お探しのページは存在しません。</p>';
-    }
-  </script>
+    <h1>URLを確認しています...</h1>
 </body>
 </html>
