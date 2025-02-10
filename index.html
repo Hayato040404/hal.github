@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>短縮URLサービス</title>
+    <title>短縮URL作成</title>
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzriFmx_PrBsq2SSt6esx_e7_NPCou5RCEcCAdVkk0dKRMc07yeV7VVlcjcyBUr4tyaNA/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwlwa1MrpRxMy3YDtzjDFjatHgBbvuiu45Ahp9_76fp5JhUSkEDkDnYO1I4Adosb_BbUg/exec";
 
-        // 📌 短縮URLを作成
-        function fetchShortenUrl() {
+        function shortenUrl() {
             const longUrl = document.getElementById("longUrl").value;
             if (!longUrl) {
-                alert("URLを入力してください！");
+                alert("URLを入力してください");
                 return;
             }
 
             var script = document.createElement("script");
             var callbackName = "shortenCallback";
+
             window[callbackName] = function(response) {
                 if (response.status === "success") {
-                    document.getElementById("result").innerHTML =
-                        `<p>短縮URL: <a href="${response.shortUrl}" target="_blank">${response.shortUrl}</a></p>`;
+                    document.getElementById("shortUrl").innerHTML = 
+                        `短縮URL: <a href="${response.shortUrl}" target="_blank">${response.shortUrl}</a>`;
                 } else {
-                    alert("エラー: " + response.message);
+                    alert("短縮URLの作成に失敗しました");
                 }
                 delete window[callbackName];
             };
@@ -30,34 +30,12 @@
             script.src = `${GAS_URL}?action=shorten&url=${encodeURIComponent(longUrl)}&callback=${callbackName}`;
             document.body.appendChild(script);
         }
-
-        // 📌 短縮URLを開いたときに自動リダイレクト
-        function handleRedirect() {
-            const path = window.location.pathname.substring(1); // "/abc123" -> "abc123"
-            if (path) {
-                var script = document.createElement("script");
-                var callbackName = "expandCallback";
-                window[callbackName] = function(response) {
-                    if (response.status === "success") {
-                        window.location.href = response.longUrl; // 取得したURLへリダイレクト
-                    } else {
-                        document.body.innerHTML = "<h1>404 - Not Found</h1><p>指定された短縮URLは存在しません。</p>";
-                    }
-                    delete window[callbackName];
-                };
-
-                script.src = `${GAS_URL}?action=expand&code=${encodeURIComponent(path)}&callback=${callbackName}`;
-                document.body.appendChild(script);
-            }
-        }
-
-        window.onload = handleRedirect;
     </script>
 </head>
 <body>
-    <h1>短縮URLサービス</h1>
-    <input type="text" id="longUrl" placeholder="短縮したいURLを入力">
-    <button onclick="fetchShortenUrl()">短縮する</button>
-    <div id="result"></div>
+    <h1>短縮URL作成</h1>
+    <input type="text" id="longUrl" placeholder="短縮するURLを入力">
+    <button onclick="shortenUrl()">短縮URLを作成</button>
+    <p id="shortUrl"></p>
 </body>
 </html>
