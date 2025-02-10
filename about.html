@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>動作説明 - i-x.f5.si</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="URL短縮サービスの動作説明。サービスの仕組み、利用技術、リダイレクト処理の流れなどを詳しく解説します。">
+  <link rel="canonical" href="https://i-x.f5.si/about.html">
+  <!-- Open Graph -->
+  <meta property="og:title" content="動作説明 - i-x.f5.si">
+  <meta property="og:description" content="URL短縮サービスの動作の仕組みをご説明します。">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    header { background: #007BFF; color: #fff; padding: 10px; }
+    header nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
+    header nav ul li { margin-right: 15px; }
+    header nav ul li a { color: #fff; text-decoration: none; font-weight: bold; }
+    .container { max-width: 800px; margin: 20px auto; padding: 20px; }
+    h1 { text-align: center; }
+    h2 { color: #007BFF; }
+    p { line-height: 1.6; }
+    ol { margin-left: 20px; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="/">ホーム</a></li>
+        <li><a href="/faq.html">FAQ</a></li>
+        <li><a href="/terms.html">利用規約</a></li>
+        <li><a href="/about.html">動作説明</a></li>
+      </ul>
+    </nav>
+  </header>
+  <div class="container">
+    <h1>動作説明</h1>
+    <h2>サービスの概要</h2>
+    <p>
+      当サービスは、入力された長いURLに対し、ランダムな短縮コードを生成して短縮URLを作成するシステムです。ユーザーは生成された短縮URLを共有することで、元のURLへ簡単にアクセスできます。
+    </p>
+    <h2>仕組みの詳細</h2>
+    <ol>
+      <li>
+        <strong>URL入力と短縮コード生成</strong><br>
+        ユーザーがホームページのフォームにURLを入力すると、JavaScriptがランダムな6文字の短縮コードを生成します。
+      </li>
+      <li>
+        <strong>データの保存</strong><br>
+        生成された短縮コードと元のURLは、Google Apps Script（GAS）を介してGoogleスプレッドシートに保存されます。
+      </li>
+      <li>
+        <strong>短縮URLの公開</strong><br>
+        短縮URLは <code>https://i-x.f5.si/短縮コード</code> の形式で生成され、ユーザーに提供されます。
+      </li>
+      <li>
+        <strong>リダイレクト処理</strong><br>
+        他のユーザーが短縮URLにアクセスすると、GASがスプレッドシートから対応する元のURLを取得し、自動的にリダイレクトを行います。
+      </li>
+    </ol>
+    <h2>利用技術</h2>
+    <p>
+      このサービスは、GitHub Pages 上のフロントエンドと、Google Apps Script（GAS）をバックエンドとして連携させています。GAS は Google スプレッドシートをデータベースとして利用し、短縮コードと元URLの対応情報の読み書きを行います。
+    </p>
+  </div>
+</body>
+</html>
