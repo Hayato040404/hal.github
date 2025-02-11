@@ -6,8 +6,8 @@ async function generateShortCode(url) {
     const encoder = new TextEncoder();
     const data = encoder.encode(url);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hashArray = Array.from(new Uint8Array(hashBuffer)); // バイト配列に変換
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // 16進数文字列に変換
     
     let num = BigInt("0x" + hashHex); // 16進数 → 数値
     let shortCode = "";
