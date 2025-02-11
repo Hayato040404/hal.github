@@ -50,29 +50,38 @@
         }
 
         function saveUrlToGitHub(url, shortened, shortenedUrl) {
-            const apiUrl = 'https://api.github.com/repos/hayato040404/hal.github/contents/urls.json';
-            const token = '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';  // 必要なGitHubトークンを取得
+            const apiUrl = 'https://api.github.com/repos/Hayato040404/hal.github/contents/urls.json';
+            const token = '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';  // ここにGitHubトークンを入力
 
-            const data = {
-                message: 'Add new shortened URL',
-                content: btoa(JSON.stringify({ originalUrl: url, shortenedUrl: shortenedUrl })),
-            };
+            // 現在のurls.jsonを読み込んで、新しいURLを追加する
+            fetch('https://raw.githubusercontent.com/Hayato040404/hal.github/gh-pages/urls.json')
+                .then(response => response.json())
+                .then(data => {
+                    // 新しいURLデータを追加
+                    data.push({ originalUrl: url, shortenedUrl: shortenedUrl });
 
-            $.ajax({
-                url: apiUrl,
-                type: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                },
-                data: JSON.stringify(data),
-                success: function(response) {
-                    console.log('URL saved to GitHub:', response);
-                },
-                error: function(error) {
-                    console.error('Error saving to GitHub:', error);
-                }
-            });
+                    const dataToSend = {
+                        message: 'Add new shortened URL',
+                        content: btoa(JSON.stringify(data)),
+                        sha: data.sha // 既存のSHAを使用
+                    };
+
+                    // JSONをGitHubにアップロード
+                    fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        },
+                        body: JSON.stringify(dataToSend)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log('Successfully saved:', result);
+                    })
+                    .catch(error => console.error('Error saving to GitHub:', error));
+                })
+                .catch(error => console.error('Error fetching urls.json:', error));
         }
     </script>
 </body>
