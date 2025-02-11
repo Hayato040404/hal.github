@@ -51,19 +51,20 @@
 
         function saveUrlToGitHub(url, shortened, shortenedUrl) {
             const apiUrl = 'https://api.github.com/repos/Hayato040404/hal.github/contents/urls.json';
-            const token = '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';  // ここにGitHubトークンを入力
+            const token = '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';  // トークンをサーバーサイドで取得して使うべきです
 
             // 現在のurls.jsonを読み込んで、新しいURLを追加する
             fetch('https://raw.githubusercontent.com/Hayato040404/hal.github/refs/heads/main/urls.json')
                 .then(response => response.json())
                 .then(data => {
+                    const sha = data.sha;  // ここでSHAを正しく取得
                     // 新しいURLデータを追加
                     data.push({ originalUrl: url, shortenedUrl: shortenedUrl });
 
                     const dataToSend = {
                         message: 'Add new shortened URL',
-                        content: btoa(JSON.stringify(data)),
-                        sha: data.sha // 既存のSHAを使用
+                        content: btoa(JSON.stringify(data)), // Base64エンコード
+                        sha: sha // 正しいSHAを指定
                     };
 
                     // JSONをGitHubにアップロード
