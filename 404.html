@@ -3,13 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>リダイレクト中...</title>
-    <script src="script.js"></script>
+    <title>URLリダイレクト</title>
+    <script>
+        // GitHub APIからurls.jsonを取得
+        const path = window.location.pathname.slice(1); // 短縮URLの部分を取り出す
+        const apiUrl = 'https://raw.githubusercontent.com/hayato040404/hal.github/gh-pages/urls.json'; // urls.jsonのパス
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                const mapping = data.find(item => item.shortened === path);
+                if (mapping) {
+                    // リダイレクト
+                    window.location.href = mapping.originalUrl;
+                } else {
+                    document.body.innerHTML = "<h1>404 - ページが見つかりません</h1><p>指定されたURLは存在しません。</p>";
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching urls.json:', error);
+                document.body.innerHTML = "<h1>エラーが発生しました</h1><p>再度お試しください。</p>";
+            });
+    </script>
 </head>
 <body>
-    <script>
-        handleRedirect();
-    </script>
-    <p>リダイレクト中... もし自動で移動しない場合は、手動でクリックしてください。</p>
+    <h1>リダイレクト中...</h1>
+    <p>少々お待ちください...</p>
 </body>
 </html>
