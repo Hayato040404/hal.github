@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URL短縮サービス</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input { padding: 8px; font-size: 14px; }
+    button { padding: 8px 12px; font-size: 14px; }
+    .result { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div id="content"></div>
+
+  <script>
+    // --- 共通関数 ---
+    // ランダムな6文字のコードを生成
+    function generateCode(length = 6) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let code = '';
+      for (let i = 0; i < length; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
+    // localStorage からマッピング（コード→URL）を取得
+    function getMapping() {
+      const mappingJSON = localStorage.getItem('urlMapping');
+      return mappingJSON ? JSON.parse(mappingJSON) : {};
+    }
+
+    // localStorage にマッピングを保存
+    function saveMapping(mapping) {
+      localStorage.setItem('urlMapping', JSON.stringify(mapping));
+    }
+
+    // URL パスからコードを取得（例：パスが "/Ab3dE1" → コード "Ab3dE1"）
+    function getCodeFromPath() {
+      const path = window.location.pathname;
+      // ルートの場合は空文字または "/" となるので null を返す
+      if (path === "/" || path === "") {
+        return null;
+      }
+      // "/" を除いた部分を返す
+      return path.slice(1);
+    }
+
+    // --- リダイレクト処理 ---
+    function handleRedirection() {
+      const code = getCodeFromPath();
+      if (code) {
+        const mapping = getMapping();
+        if (mapping[code]) {
+          const originalUrl = mapping[code];
+          document.getElementById('content').innerHTML =
+            '<p>リダイレクト中… <a href="' + originalUrl + '">手動でリダイレクト</a></p>';
+          // 1秒後に自動でリダイレクト
+          setTimeout(() => {
+            window.location.href = originalUrl;
+          }, 1000);
+        } else {
+          document.getElementById('content').innerHTML =
+            '<p>エラー：この短縮URLは存在しません。</p>';
+        }
+        return true;
+      }
+      return false;
+    }
+
+    // --- フォームの表示 ---
+    function displayForm() {
+      const html = `
+        <h1>URL短縮サービス</h1>
+        <form id="shortenForm">
+          <label for="originalUrl">短縮したいURLを入力してください:</label><br>
+          <input type="url" id="originalUrl" placeholder="https://example.com" required style="width:300px;"><br><br>
+          <button type="submit">短縮する</button>
+        </form>
+        <div class="result" id="result" style="display:none;">
+          <p>生成された短縮URL:</p>
+          <input type="text" id="shortUrl" style="width:300px;" readonly>
+        </div>
+      `;
+      document.getElementById('content').innerHTML = html;
+
+      // フォーム送信時の処理
+      document.getElementById("shortenForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const originalUrl = document.getElementById("originalUrl").value;
+        // ※必要に応じて URL のバリデーション処理を追加してください
+
+        const mapping = getMapping();
+        let code;
+        // 重複しないユニークなコードを生成
+        do {
+          code = generateCode(6);
+        } while (mapping.hasOwnProperty(code));
+
+        // マッピングを保存
+        mapping[code] = originalUrl;
+        saveMapping(mapping);
+
+        // 短縮URLは、現在のオリジン + "/" + コード（例：https://i-x.f5.si/Ab3dE1）
+        const shortUrl = window.location.origin + "/" + code;
+        document.getElementById("result").style.display = "block";
+        document.getElementById("shortUrl").value = shortUrl;
+      });
+    }
+
+    // --- 初期処理 ---
+    window.addEventListener('DOMContentLoaded', function() {
+      // GitHub Pages でカスタムドメイン（例: i-x.f5.si や x.gd）を設定していれば、
+      // window.location.origin がそのドメインとなります。
+      if (!handleRedirection()) {
+        displayForm();
+      }
+    });
+  </script>
+</body>
+</html>
