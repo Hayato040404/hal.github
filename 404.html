@@ -7,7 +7,7 @@
     <script>
         // GitHub APIからurls.jsonを取得
         const path = window.location.pathname.slice(1); // 短縮URLの部分を取り出す
-        const apiUrl = 'https://raw.githubusercontent.com/hayato040404/hal.github/gh-pages/urls.json'; // urls.jsonのパス
+        const apiUrl = 'https://raw.githubusercontent.com/Hayato040404/hal.github/refs/heads/main/urls.json'; // urls.jsonのパス
 
         fetch(apiUrl)
             .then(response => response.json())
