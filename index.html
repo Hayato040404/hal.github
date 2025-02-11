@@ -4,16 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL短縮サービス</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f8f9fa;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        #shortened-url {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
     <h1>URL短縮サービス</h1>
-    <p>短縮したいURLを入力してください：</p>
-    <input type="url" id="originalUrl" placeholder="https://example.com">
-    <button onclick="shortenUrl()">短縮する</button>
-    <p id="shortenedUrl"></p>
-    <a href="about.html">このサービスについて</a>
+    <input type="text" id="url-input" placeholder="URLを入力" />
+    <button onclick="generateShortenedUrl()">短縮</button>
+    <div id="shortened-url"></div>
 
-    <script src="script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function generateShortenedUrl() {
+            const url = document.getElementById("url-input").value;
+            const shortened = generateRandomString(6); // ランダム6文字の生成
+            const shortenedUrl = `https://i-x.f5.si/${shortened}`;
+            document.getElementById("shortened-url").innerText = `短縮URL: ${shortenedUrl}`;
+
+            // GitHub APIに保存
+            saveUrlToGitHub(url, shortened, shortenedUrl);
+        }
+
+        function generateRandomString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        function saveUrlToGitHub(url, shortened, shortenedUrl) {
+            const apiUrl = 'https://api.github.com/repos/hayato040404/hal.github/contents/urls.json';
+            const token = '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';  // 必要なGitHubトークンを取得
+
+            const data = {
+                message: 'Add new shortened URL',
+                content: btoa(JSON.stringify({ originalUrl: url, shortenedUrl: shortenedUrl })),
+            };
+
+            $.ajax({
+                url: apiUrl,
+                type: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                },
+                data: JSON.stringify(data),
+                success: function(response) {
+                    console.log('URL saved to GitHub:', response);
+                },
+                error: function(error) {
+                    console.error('Error saving to GitHub:', error);
+                }
+            });
+        }
+    </script>
 </body>
 </html>
